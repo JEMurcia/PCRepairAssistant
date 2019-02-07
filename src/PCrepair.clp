@@ -140,37 +140,52 @@
  (assert (check loose-ram))
  (recommend-action "check for loose RAM, then continue"))
 
-;; ERROR: the system has reached the limits of its knowledge
-(defrule MAIN::unknown-sound
-    (declare (auto-focus TRUE)) 
-    (answer (ident sound) (text yes)) 
-    (answer (ident seek) (text no)) 
-    (answer (ident does-beep) (text no)) 
-    => 
-    (recommend-action "consult a human expert") 
-    (halt))
-
 ;; DISK DOES MAKE A SEEKING SOUND
 
 (defrule MAIN::no-boot-start 
     (declare (auto-focus TRUE)) 
-    (answer (ident sound) (text yes)) 
-    (answer (ident seek) (text yes)) 
     (answer (ident boot-begins) (text no)) 
     => 
     (recommend-action 
-    "check keyboard, RAM, motherboard, and power supply") 
-    (halt)) 
+    "check any more complex. Its probably that your problem is on your RAM, mother board or processor") 
+	(assert (answer (ident internal-problem) (text yes)))
+    ) 
 
+(defrule MAIN::internal-memory
+    (declare (auto-focus TRUE)) 
+	(answer (ident internal-problem) (text yes))
+    (answer (ident low-energy) (text yes)) 
+    => 
+    (recommend-action 
+    "can try disconnecting all peripherals and conect them again or disconect and conect your processor and RAM Memmory") 
+	(halt)
+    ) 
+	
+(defrule MAIN::unknown
+    (declare (auto-focus TRUE)) 
+    (answer (ident low-energy) (text no)) 
+    => 
+    (recommend-action 
+    "consult a software expert") 
+	(halt)
+    ) 
+	
 (defrule MAIN::boot-start 
     (declare (auto-focus TRUE)) 
-    (answer (ident sound) (text yes)) 
-    (answer (ident seek) (text yes)) 
     (answer (ident boot-begins) (text yes)) 
     => 
     (recommend-action "consult a software expert")
     (halt))
 
+;; Screen disconected
+(defrule MAIN::screen-test 
+    (declare (auto-focus TRUE)) 
+    (answer (ident screen-on) (text no))
+	(answer (ident screen-sig) (text no))
+    => 
+    (recommend-action "Please turn on your screen")
+    (halt))
+	
 ;; CHECK LOOSE RAM
 
 (defrule MAIN::loose-ram 
@@ -212,9 +227,17 @@
     (question 
       (ident loose-ram) (type multi) (valid yes no) 
       (text "Are any of the memory modules loose?")) 
+	(question 
+      (ident screen-sig) (type multi) (valid yes no) 
+      (text "Is the screen showing any signal?"))
+	(question 
+      (ident screen-on) (type multi) (valid yes no) 
+      (text "Is the screen on?"))
     (question 
       (ident boot-begins) (type multi) (valid yes no) 
-      (text "Does the computer begin to boot?")))
-
+      (text "Does the computer begin to boot?"))
+	(question 
+      (ident low-energy) (type multi) (valid yes no) 
+      (text "Was there a blackout recently?"))
 (reset)
 (run)
